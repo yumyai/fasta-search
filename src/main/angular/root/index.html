@@ -10,6 +10,7 @@
     <form ng-submit="processQuery()">
       <textarea ng-model="formData.query" name="query" rows="20" cols="90"></textarea>
       <input type="submit" value="Submit">
+      <input type="button" ng-click="clearBox()" value="Clear">
     </form>
     <h3>Generated FASTA here</h3>
     <textarea ng-model="result" name="result" rows="20" cols="90"></textarea>
