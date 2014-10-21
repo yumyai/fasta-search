@@ -69,5 +69,5 @@ trait CoreActors {
 //  val registration = system.actorOf(Props[RegistrationActor])
 //  val messenger    = system.actorOf(Props[MessengerActor])
   val db = system.actorOf(Props[DBActor])
-  val gene = system.actorOf(Props(new GeneActor(db)))
+  val protein = system.actorOf(Props(new ProteinActor(db)))
 }

@@ -2,10 +2,13 @@ package core
 
 import akka.actor.Actor
 import core.DBActor._
-import core.GeneActor.BatchSymbolQuery
-import db.{Gene, ProductionDB}
+import core.ProteinActor.BatchSymbolQuery
+import db.{DAL, ProductionDB}
+import scala.slick.jdbc.JdbcBackend.Database
+
 
 import scala.slick.driver.H2Driver
+import scala.slick.jdbc.JdbcBackend._
 
 /**
  * Created by preecha on 10/11/14 AD.
@@ -16,9 +19,6 @@ object DBActor {
   case class InsertFASTA(fasta: String)
 
   case class PrepareDB()
-
-  // Alot of answer.
-
 
 }
 
@@ -57,4 +57,23 @@ class DBActor extends Actor with ProductionDB {
       println("Illegal message at DbActor")
     }
   }
+}
+
+trait DBDAO { this: Actor =>
+
+  val dal: DAL
+  val db: Database
+
+}
+
+trait TestDBDAO {
+
+  val dal = new DAL(H2Driver)
+  val db = Database.forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver")
+
+  implicit val implicitSession = db.createSession
+}
+
+trait ProductionDAO {
+
 }

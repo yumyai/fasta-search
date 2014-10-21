@@ -12,12 +12,12 @@ import java.util.UUID
  */
 class GeneActorSpec extends TestKit(ActorSystem()) with SpecificationLike with CoreActors with Core with ImplicitSender {
 
-  import GeneActor._
+  import ProteinActor._
 
   "Gene should" >> {
 
     "reject invalid email" in {
-      gene ! BatchSymbolQuery(List(""))
+      protein ! BatchSymbolQuery(List(""))
       success
     }
   }
