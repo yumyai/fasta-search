@@ -9,21 +9,21 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import akka.actor.{ActorRef, Actor}
 import akka.pattern.{ask, pipe}
 
-import core.ProteinActor._
-import db.{ProductionDB, DAL, Protein}
+import core.GeneActor._
+import db.{ProductionDB, Protein}
 
-object ProteinActor {
-  case class ProteinSearch(query: String)
-  case class BatchProteinQuery(query: List[String])
+object GeneActor {
+  case class GeneSearch(query: String)
+  case class BatchGeneQuery(query: List[String])
 }
 
 
-class ProteinActor(db: ActorRef) extends Actor with ProductionDB {
+class GeneActor(db: ActorRef) extends Actor with ProductionDB {
 
   implicit val timeout = Timeout(5 seconds)
 
   def receive: Receive = {
-    case b@BatchProteinQuery(query) => {
+    case b@BatchGeneQuery(query) => {
       val future = for {
         x <- (db ? b).mapTo[List[Protein]]
       } yield x
@@ -31,8 +31,8 @@ class ProteinActor(db: ActorRef) extends Actor with ProductionDB {
     }
 
     // TODO: Implement this
-//    case Search(query) => {
-//      "Nothing"
-//    }
+    //    case Search(query) => {
+    //      "Nothing"
+    //    }
   }
 }

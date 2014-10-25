@@ -17,7 +17,7 @@ class GeneActorSpec extends TestKit(ActorSystem()) with SpecificationLike with C
   "Gene should" >> {
 
     "reject invalid email" in {
-      protein ! BatchSymbolQuery(List(""))
+      protein ! BatchProteinQuery(List(""))
       success
     }
   }

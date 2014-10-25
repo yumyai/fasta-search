@@ -21,9 +21,14 @@ class Model(name: String, dal: DAL, db: Database) {
 
   def create() = dal.create
   
-  def batchSymbolQuery(queries: List[String]): List[Protein] = dal.batchFindSymbol(queries)
+  def batchProteinQuery(queries: List[String]): List[Protein] = dal.batchProteinQuery(queries)
 
-  def insertFASTA(fname: String): Unit = dal.insertAAFASTA(fname)
+  def batchGeneQuery(queries: List[String]): List[Gene] = dal.batchGeneQuery(queries)
+
+
+  def insertAAFASTA(fname: String): Unit = dal.insertAAFASTA(fname)
+
+  def insertNAFASTA(fname: String): Unit = dal.insertNAFASTA(fname)
 
   //TODO: Close connection
   //def closeSession()

@@ -2,7 +2,8 @@ package core
 
 import akka.actor.Actor
 import core.DBActor._
-import core.ProteinActor.BatchSymbolQuery
+import core.GeneActor.BatchGeneQuery
+import core.ProteinActor.BatchProteinQuery
 import db.{DAL, ProductionDB}
 import scala.slick.jdbc.JdbcBackend.Database
 
@@ -16,23 +17,30 @@ import scala.slick.jdbc.JdbcBackend._
 
 object DBActor {
 
-  case class InsertFASTA(fasta: String)
+  case class InsertAAFASTA(fasta: String)
+
+  case class InsertNAFASTA(fasta: String)
 
   case class PrepareDB()
 
 }
 
-class DBActor extends Actor with ProductionDB {
+class DBActor extends Actor with ProductionDB with akka.actor.ActorLogging {
   // Actor with DB. Most of these are delegated to model, which in turn delegate to dal.
 
 
-  def insertFASTA(fname: String) = {
-    println("Inserting FASTA")
-    model.insertFASTA(fname)
+  def insertAAFASTA(fname: String) = {
+    log.info("Inserting AA FASTA")
+    model.insertAAFASTA(fname)
+  }
+
+  def insertNAFASTA(fname: String) = {
+    log.info("Inserting NA FASTA")
+    model.insertNAFASTA(fname)
   }
 
   def prepareDB() = {
-    println("Prepareing DB")
+    log.info("Prepareing DB")
     model.create()
   }
 
@@ -44,13 +52,22 @@ class DBActor extends Actor with ProductionDB {
       sender ! true
     }
 
-    case InsertFASTA(fname) => {
-      insertFASTA(fname)
+    case InsertAAFASTA(fname) => {
+      insertAAFASTA(fname)
       sender ! true
     }
 
-    case BatchSymbolQuery(query: List[String]) => {
-      sender ! model.batchSymbolQuery(query)
+    case InsertNAFASTA(fname) => {
+      insertNAFASTA(fname)
+      sender ! true
+    }
+
+    case BatchProteinQuery(query: List[String]) => {
+      sender ! model.batchProteinQuery(query)
+    }
+
+    case BatchGeneQuery(query: List[String]) => {
+      sender ! model.batchGeneQuery(query)
     }
 
     case _ => {

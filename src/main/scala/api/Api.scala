@@ -15,5 +15,8 @@ trait Api extends HttpService with CoreActors with Core {
 
   //protected implicit val system : ActorSystem
   val routes =
+    new GeneService(gene).allroute ~
     new ProteinService(protein).allroute
+
+//    new GeneProteinService(protein, gene).allroute
 }

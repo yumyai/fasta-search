@@ -9,7 +9,7 @@ import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
 import spray.can.Http
-import core.DBActor.{PrepareDB, InsertFASTA}
+import core.DBActor._
 import api.{Api, RoutedHttpService}
 import web.StaticResources
 
@@ -34,16 +34,18 @@ trait BootedCore extends Core with Api with StaticResources { this: scala.App =>
 
   implicit val timeout = Timeout(5 seconds)
 
-  lazy val fasta = args(0)
+  lazy val aafasta = args(0)
+  lazy val nafasta = args(1)
 
   // Prepare database
   // TODO: This is perfect chance to practice monad foo. Change it to monadic later.
 
   val prepare = for {
     a <- (db ? PrepareDB()).mapTo[Boolean]
-    b <- (db ? InsertFASTA(fasta)).mapTo[Boolean]}
+    b <- (db ? InsertAAFASTA(aafasta)).mapTo[Boolean]
+    c <- (db ? InsertNAFASTA(nafasta)).mapTo[Boolean]}
 
-  yield a && b
+  yield a && b && c
 
   IO(Http)(system) ! Http.Bind(rootService, "0.0.0.0", port = 8081)
 
@@ -70,4 +72,5 @@ trait CoreActors {
 //  val messenger    = system.actorOf(Props[MessengerActor])
   val db = system.actorOf(Props[DBActor])
   val protein = system.actorOf(Props(new ProteinActor(db)))
+  val gene = system.actorOf(Props(new GeneActor(db)))
 }
