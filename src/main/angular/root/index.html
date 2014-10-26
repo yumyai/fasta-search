@@ -2,20 +2,23 @@
 <html ng-app="fastaQueryApp" lang="en">
 <head>
   <meta charset="UTF-8">
-  <title></title>
+  <title>Quick query</title>
 </head>
 <body>
   <h2>Query here</h2>
   <div ng-controller="FastaQueryCtrl">
     <form ng-submit="processQuery()">
       <textarea ng-model="formData.query" name="query" rows="20" cols="90"></textarea>
+      <input type="radio" ng-model="formData.dbtype" name="dbtype" value="protein" checked="checked" >Protein
       <input type="radio" ng-model="formData.dbtype" name="dbtype" value="gene">Gene
-      <input type="radio" ng-model="formData.dbtype" name="dbtype" value="protein">Protein
       <input type="submit" value="Submit">
       <input type="button" ng-click="clearBox()" value="Clear">
+      <input type="button" ng-click="example()" value="Example">
     </form>
-    <h3>Generated FASTA here</h3>
-    <textarea ng-model="result" name="result" rows="20" cols="90"></textarea>
+    <div>
+      <h3>Output</h3>
+      <textarea ng-model="result" name="result" rows="20" cols="90"></textarea>
+    </div>
   </div>
   <script src="bower_components/angular/angular.js"></script>
   <script src="js/fasta-query-app.js"></script>
