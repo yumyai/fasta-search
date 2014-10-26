@@ -36,6 +36,7 @@ class DAL(val driver:JdbcProfile) extends GeneComponent with DriverComponent wit
     }
   }
 
+
   def batchProteinQuery(list: List[String])(implicit session: Session): List[Protein] = {
     val results = for {
       protein <- proteins if protein.symbol inSet list

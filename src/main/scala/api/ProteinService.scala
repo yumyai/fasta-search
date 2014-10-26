@@ -3,6 +3,7 @@ package api
 import akka.actor.ActorRef
 import akka.util.Timeout
 import akka.pattern.ask
+import spray.routing.directives.RouteDirectives._
 
 
 import scala.concurrent.{Future, Await, ExecutionContext}
@@ -11,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import core.ProteinActor.BatchProteinQuery
 import db.Protein
-import spray.routing.Directives
+import spray.routing.{MalformedFormFieldRejection, Directives}
 
 import scala.concurrent.ExecutionContext
 
@@ -27,24 +28,18 @@ class ProteinService(protein: ActorRef)(implicit executionContext: ExecutionCont
 
   val proteinroute = {
     path("batchquery") {
-      formFields('query.as[String], 'dbtype.as[String]) { (query, dbtype) =>
+
+      formFields('query.as[String], 'dbtype.as[String]) {(query, dbtype) =>
         // Preparing query
         val queries = query.split("""\n+|\t+|\s+|,""").toList
 
-        println("protein route")
-
-        reject()
-
         if(dbtype != "protein") {
-          reject()
+          reject(MalformedFormFieldRejection("dbtype", "Not protein"))
+        } else {
+          val future = (protein ? BatchProteinQuery(queries)).mapTo[List[Protein]].map(proteins2FASTA _)
+          val results = Await.result(future, timeout.duration)
+          complete(results)
         }
-
-        val future = (protein ? BatchProteinQuery(queries)).mapTo[List[Protein]].map(proteins2FASTA _)
-
-        val results = Await.result(future, timeout.duration)
-
-        complete(results)
-
       }
     }
   }
