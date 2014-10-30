@@ -19,8 +19,6 @@ trait GeneComponent {
     def sequence = column[String]("SEQUENCE")
 
     def * = (symbol, sequence, id.?) <> (Gene.tupled, Gene.unapply)
-
-
   }
 
   val genes = TableQuery[Genes]

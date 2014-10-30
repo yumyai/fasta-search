@@ -28,11 +28,23 @@ trait Core {
  * termination handler to stop the system when the JVM exits.
  */
 trait BootedCore extends Core with Api with StaticResources { this: scala.App =>
+
+  // Checking argument.
+  val usage = """
+    Usage: fasta-search [--min-size num] [--max-size num] filename
+              """
+
+//  if (args.length == 0) {
+//    println(usage)
+//    sys.exit(0)
+//  }
+
+
   def system: ActorSystem = ActorSystem("fastaquery")
   def actorRefFactory: ActorRefFactory = system
   val rootService = system.actorOf(Props(new RoutedHttpService(routes ~ staticResources )))
 
-  implicit val timeout = Timeout(5 seconds)
+  implicit val timeout = Timeout(20 seconds)
 
   lazy val aafasta = args(0)
   lazy val nafasta = args(1)
@@ -40,14 +52,26 @@ trait BootedCore extends Core with Api with StaticResources { this: scala.App =>
   // Prepare database
   // TODO: This is perfect chance to practice monad foo. Change it to monadic later.
 
-  val prepare = for {
-    a <- (db ? PrepareDB()).mapTo[Boolean]
-    b <- (db ? InsertAAFASTA(aafasta)).mapTo[Boolean]
-    c <- (db ? InsertNAFASTA(nafasta)).mapTo[Boolean]}
+//  (db ? PrepareDB()).onSuccess {
+//    case _ => println("hello")
+//  }
+  // Use on complete instead.
+  (db ? PrepareDB()).onSuccess {
+    case _ => (db ? InsertAAFASTA(aafasta)).onSuccess {
+      case _ => (db ? InsertNAFASTA(nafasta)).onSuccess {
+        case _ => IO(Http)(system) ! Http.Bind(rootService, "0.0.0.0", port = 8081)
+      }
+    }
+  }
 
-  yield a && b && c
-
-  IO(Http)(system) ! Http.Bind(rootService, "0.0.0.0", port = 8081)
+//  val prepare = for {
+//    a <- (db ? PrepareDB()).mapTo[Boolean]
+//    b <- (db ? InsertAAFASTA(aafasta)).mapTo[Boolean]
+//    c <- (db ? InsertNAFASTA(nafasta)).mapTo[Boolean]}
+//
+//  yield a && b && c
+//
+//  IO(Http)(system) ! Http.Bind(rootService, "0.0.0.0", port = 8081)
 
   /**
    * Construct the ActorSystem we will use in our application

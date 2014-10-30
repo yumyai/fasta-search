@@ -21,10 +21,9 @@ class Model(name: String, dal: DAL, db: Database) {
 
   def create() = dal.create
   
-  def batchProteinQuery(queries: List[String]): List[Protein] = dal.batchProteinQuery(queries)
+  def batchProteinQuery(queries: List[String]): List[Protein] = dal.batchProteinQueryLike(queries)
 
-  def batchGeneQuery(queries: List[String]): List[Gene] = dal.batchGeneQuery(queries)
-
+  def batchGeneQuery(queries: List[String]): List[Gene] = dal.batchGeneQueryLike(queries)
 
   def insertAAFASTA(fname: String): Unit = dal.insertAAFASTA(fname)
 

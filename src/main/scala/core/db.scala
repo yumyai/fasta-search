@@ -23,6 +23,12 @@ object DBActor {
 
   case class PrepareDB()
 
+  trait DBMessage
+
+  case class DBSuccess() extends DBMessage
+
+  case class DBError() extends DBMessage
+
 }
 
 class DBActor extends Actor with ProductionDB with akka.actor.ActorLogging {
@@ -39,6 +45,11 @@ class DBActor extends Actor with ProductionDB with akka.actor.ActorLogging {
     model.insertNAFASTA(fname)
   }
 
+  def insertAA_NAFASTA(naname: String, aaname: String): Unit = {
+    model.insertNAFASTA(naname)
+    model.insertAAFASTA(aaname)
+  }
+
   def prepareDB() = {
     log.info("Prepareing DB")
     model.create()
@@ -49,17 +60,17 @@ class DBActor extends Actor with ProductionDB with akka.actor.ActorLogging {
 
     case message:PrepareDB => {
       prepareDB()
-      sender ! true
+      sender ! DBSuccess()
     }
 
     case InsertAAFASTA(fname) => {
       insertAAFASTA(fname)
-      sender ! true
+      sender ! DBSuccess()
     }
 
     case InsertNAFASTA(fname) => {
       insertNAFASTA(fname)
-      sender ! true
+      sender ! DBSuccess()
     }
 
     case BatchProteinQuery(query: List[String]) => {
@@ -71,7 +82,7 @@ class DBActor extends Actor with ProductionDB with akka.actor.ActorLogging {
     }
 
     case _ => {
-      println("Illegal message at DbActor")
+      sender ! DBError()
     }
   }
 }

@@ -1,10 +1,11 @@
 package db
 
 
+
 case class Protein(symbol: String, sequence:String, id: Option[Int] = None)
 
 trait ProteinComponent {
-  this: GeneComponent with DriverComponent =>
+  this: GeneComponent with DriverComponent  =>
 
   import driver.simple._
 
