@@ -56,6 +56,10 @@ trait BootedCore extends Core with Api with StaticResources { this: scala.App =>
 //    case _ => println("hello")
 //  }
   // Use on complete instead.
+//  (db ? PrepareDB()).onSuccess {
+//    case _ => println("ok")
+//  }
+
   (db ? PrepareDB()).onSuccess {
     case _ => (db ? InsertAAFASTA(aafasta)).onSuccess {
       case _ => (db ? InsertNAFASTA(nafasta)).onSuccess {
@@ -63,15 +67,6 @@ trait BootedCore extends Core with Api with StaticResources { this: scala.App =>
       }
     }
   }
-
-//  val prepare = for {
-//    a <- (db ? PrepareDB()).mapTo[Boolean]
-//    b <- (db ? InsertAAFASTA(aafasta)).mapTo[Boolean]
-//    c <- (db ? InsertNAFASTA(nafasta)).mapTo[Boolean]}
-//
-//  yield a && b && c
-//
-//  IO(Http)(system) ! Http.Bind(rootService, "0.0.0.0", port = 8081)
 
   /**
    * Construct the ActorSystem we will use in our application

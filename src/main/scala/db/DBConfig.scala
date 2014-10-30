@@ -43,8 +43,7 @@ trait TestDB extends DBConfig {
 }
 
 trait ProductionDB extends DBConfig {
+//  val model = new Model("H2", new DAL(H2Driver), Database.forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver"))
+  val model = new Model("SQLITE", new DAL(SQLiteDriver), Database.forURL("jdbc:sqlite::memory:", driver = "org.sqlite.JDBC"))
 
-
-
-  val model = new Model("H2", new DAL(H2Driver), Database.forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver"))
 }

@@ -2,7 +2,7 @@ package db
 
 
 
-case class Protein(symbol: String, sequence:String, id: Option[Int] = None)
+case class Protein(symbol: String, sequence:String, id: Option[Int] = None, geneID: Option[Int] = None)
 
 trait ProteinComponent {
   this: GeneComponent with DriverComponent  =>
@@ -17,11 +17,11 @@ trait ProteinComponent {
 
     def sequence = column[String]("SEQUENCE")
 
-    def * = (symbol, sequence, id.?) <> (Protein.tupled, Protein.unapply)
+    def geneID = column[Option[Int]]("GENE_ID")
 
-//    def geneID = column[Int]("GENE_ID")
-//
-//    def gene = foreignKey("GENE_FK", geneID, genes)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+    def * = (symbol, sequence, id.?, geneID) <> (Protein.tupled, Protein.unapply)
+
+    def gene = foreignKey("GENE_FK", geneID, genes)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
 
   }
 

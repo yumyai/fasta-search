@@ -15,7 +15,7 @@ class DAL(val driver:JdbcProfile) extends GeneComponent with DriverComponent wit
 
   import driver.simple._
 
-  def create(implicit session: Session) = (proteins.ddl ++ genes.ddl).create
+  def create(implicit session: Session) = (genes.ddl ++ proteins.ddl).create
 
   def insert(gene: Protein)(implicit session: Session): Unit = proteins.insert(gene)
 
