@@ -2,10 +2,14 @@ package core
 
 import akka.actor.Actor
 import core.DBActor._
-import core.GeneActor.BatchSymbolQuery
-import db.{Gene, ProductionDB}
+import core.GeneActor.BatchGeneQuery
+import core.ProteinActor.BatchProteinQuery
+import db.{DAL, ProductionDB}
+import scala.slick.jdbc.JdbcBackend.Database
+
 
 import scala.slick.driver.H2Driver
+import scala.slick.jdbc.JdbcBackend._
 
 /**
  * Created by preecha on 10/11/14 AD.
@@ -13,26 +17,41 @@ import scala.slick.driver.H2Driver
 
 object DBActor {
 
-  case class InsertFASTA(fasta: String)
+  case class InsertAAFASTA(fasta: String)
+
+  case class InsertNAFASTA(fasta: String)
 
   case class PrepareDB()
 
-  // Alot of answer.
+  trait DBMessage
 
+  case class DBSuccess() extends DBMessage
+
+  case class DBError() extends DBMessage
 
 }
 
-class DBActor extends Actor with ProductionDB {
+class DBActor extends Actor with ProductionDB with akka.actor.ActorLogging {
   // Actor with DB. Most of these are delegated to model, which in turn delegate to dal.
 
 
-  def insertFASTA(fname: String) = {
-    println("Inserting FASTA")
-    model.insertFASTA(fname)
+  def insertAAFASTA(fname: String) = {
+    log.info("Inserting AA FASTA")
+    model.insertAAFASTA(fname)
+  }
+
+  def insertNAFASTA(fname: String) = {
+    log.info("Inserting NA FASTA")
+    model.insertNAFASTA(fname)
+  }
+
+  def insertAA_NAFASTA(naname: String, aaname: String): Unit = {
+    model.insertNAFASTA(naname)
+    model.insertAAFASTA(aaname)
   }
 
   def prepareDB() = {
-    println("Prepareing DB")
+    log.info("Prepareing DB")
     model.create()
   }
 
@@ -41,20 +60,48 @@ class DBActor extends Actor with ProductionDB {
 
     case message:PrepareDB => {
       prepareDB()
-      sender ! true
+      sender ! DBSuccess()
     }
 
-    case InsertFASTA(fname) => {
-      insertFASTA(fname)
-      sender ! true
+    case InsertAAFASTA(fname) => {
+      insertAAFASTA(fname)
+      sender ! DBSuccess()
     }
 
-    case BatchSymbolQuery(query: List[String]) => {
-      sender ! model.batchSymbolQuery(query)
+    case InsertNAFASTA(fname) => {
+      insertNAFASTA(fname)
+      sender ! DBSuccess()
+    }
+
+    case BatchProteinQuery(query: List[String]) => {
+      sender ! model.batchProteinQuery(query)
+    }
+
+    case BatchGeneQuery(query: List[String]) => {
+      sender ! model.batchGeneQuery(query)
     }
 
     case _ => {
-      println("Illegal message at DbActor")
+      sender ! DBError()
     }
   }
+}
+
+trait DBDAO { this: Actor =>
+
+  val dal: DAL
+  val db: Database
+
+}
+
+trait TestDBDAO {
+
+  val dal = new DAL(H2Driver)
+  val db = Database.forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver")
+
+  implicit val implicitSession = db.createSession
+}
+
+trait ProductionDAO {
+
 }

@@ -2,7 +2,7 @@
 
 
 import java.sql.DriverManager
-import db.Gene
+import db.Protein
 import scala.collection.JavaConverters._
 
 object Util {
@@ -13,7 +13,7 @@ object Util {
     }
   }
 
-  def gene2Fasta(gene:Gene): String = {
+  def gene2Fasta(gene:Protein): String = {
     val header = ">" + gene.symbol
     val sequences = gene.sequence.grouped(80)
     (Iterator(header) ++  sequences).mkString("\n")

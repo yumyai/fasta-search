@@ -9,7 +9,7 @@ import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
 import spray.can.Http
-import core.DBActor.{PrepareDB, InsertFASTA}
+import core.DBActor._
 import api.{Api, RoutedHttpService}
 import web.StaticResources
 
@@ -28,24 +28,45 @@ trait Core {
  * termination handler to stop the system when the JVM exits.
  */
 trait BootedCore extends Core with Api with StaticResources { this: scala.App =>
+
+  // Checking argument.
+  val usage = """
+    Usage: fasta-search [--min-size num] [--max-size num] filename
+              """
+
+//  if (args.length == 0) {
+//    println(usage)
+//    sys.exit(0)
+//  }
+
+
   def system: ActorSystem = ActorSystem("fastaquery")
   def actorRefFactory: ActorRefFactory = system
   val rootService = system.actorOf(Props(new RoutedHttpService(routes ~ staticResources )))
 
-  implicit val timeout = Timeout(5 seconds)
+  implicit val timeout = Timeout(20 seconds)
 
-  lazy val fasta = args(0)
+  lazy val aafasta = args(0)
+  lazy val nafasta = args(1)
 
   // Prepare database
   // TODO: This is perfect chance to practice monad foo. Change it to monadic later.
 
-  val prepare = for {
-    a <- (db ? PrepareDB()).mapTo[Boolean]
-    b <- (db ? InsertFASTA(fasta)).mapTo[Boolean]}
+//  (db ? PrepareDB()).onSuccess {
+//    case _ => println("hello")
+//  }
+  // Use on complete instead.
+//  (db ? PrepareDB()).onSuccess {
+//    case _ => println("ok")
+//  }
 
-  yield a && b
-
-  IO(Http)(system) ! Http.Bind(rootService, "0.0.0.0", port = 8081)
+  (db ? PrepareDB()).onSuccess {
+    case _ => (db ? InsertAAFASTA(aafasta)).onSuccess {
+      case _ => (db ? InsertNAFASTA(nafasta)).onSuccess {
+        case _ => IO(Http)(system) ! Http.Bind(rootService, "0.0.0.0", port = 8081)
+      }
+    }
+  }
 
   /**
    * Construct the ActorSystem we will use in our application
@@ -69,5 +90,6 @@ trait CoreActors {
 //  val registration = system.actorOf(Props[RegistrationActor])
 //  val messenger    = system.actorOf(Props[MessengerActor])
   val db = system.actorOf(Props[DBActor])
+  val protein = system.actorOf(Props(new ProteinActor(db)))
   val gene = system.actorOf(Props(new GeneActor(db)))
 }

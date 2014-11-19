@@ -2,12 +2,25 @@ var fastaqueryapp = angular.module("fastaQueryApp", [])
 
 
 fastaqueryapp.controller('FastaQueryCtrl', function($scope, $http){
-  //$scope.querytext = 'whatever';
-  $scope.result = "";
-  $scope.formData = {};
-  var config = {headers: {'Content-Type': 'application/x-www-form-urlencoded'}};
+
+  //$scope.result = "";
+  var defaultForm = {
+    "query": ""
+  };
+
+  var startForm = {
+    "query": "PINS04210003C\nPINS00530045C-mRNA-1"
+  };
+
+  $scope.formData = startForm;
+
+
+  $scope.clearBox = function(){
+    $scope.formData = defaultForm;
+    $scope.result = "";
+  };
+
   $scope.processQuery = function(){
-    //$http.post("/batchquery", $scope.formData, config).success(function(data){ $scope.result = data});};
     $http({
         method: 'POST',
         url: "/batchquery",
